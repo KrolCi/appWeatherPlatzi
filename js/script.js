@@ -1,0 +1,82 @@
+(function(){
+  var API_WEATHER_KEY = "a67d111f7f943411d375b6edb008ac48";
+  var API_WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather?";
+  var WEATHER_IMG = "http://openweathermap.org/img/w/";
+
+  var today = new Date();
+  var timeNow = today.toLocaleTimeString();
+
+  var $body = $("body");
+  var $loader = $(".loader");
+  var $nameNewCity = $("[data-input='cityAdd']");
+  var $btnSendCity = $("[data-button='add']");
+
+  $($btnSendCity).on('click', addNewCity);
+
+  var cityWeather = {};
+  cityWeather.zone;
+  cityWeather.icon;
+  cityWeather.hour;
+  cityWeather.temp;
+  cityWeather.temp_max;
+  cityWeather.temp_min;
+  cityWeather.main;
+
+
+  if (navigator.geolocation) {
+
+    function startGeolocation() {
+      navigator.geolocation.getCurrentPosition(getPosition, errorFound);
+    }
+
+    function errorFound(error) {
+      console.log(":( ha ocurrido un error " + error);
+    }
+
+    function getPosition(data) {
+      var lat = data.coords.latitude;
+      var lon = data.coords.longitude;
+      $.getJSON(API_WEATHER_URL + "lat=" + lat + "&" + "lon=" + lon, getCurrentWeather);
+    }
+
+    function getCurrentWeather(data) {
+      cityWeather.zone = data.name;
+      cityWeather.hour = timeNow;
+      cityWeather.icon = WEATHER_IMG + data.weather[0].icon + ".png";
+      cityWeather.temp = data.main.temp - 273.15;
+      cityWeather.temp_max = data.main.temp_max - 273.15;
+      cityWeather.temp_min = data.main.temp_min - 273.15;
+      cityWeather.main = data.main;
+      renderTemplate();
+    }
+
+    function activateTemplate(id) {
+      var t = document.getElementById(id);
+      return document.importNode(t.content, true);
+    }
+
+    function renderTemplate() {
+      var clone = activateTemplate("template-city");
+      clone.querySelector("[data-city]").innerHTML = cityWeather.zone;
+      clone.querySelector("[data-time]").innerHTML = cityWeather.hour;
+      clone.querySelector("[data-icon]").src = cityWeather.icon;
+      clone.querySelector("[data-temp='max']").innerHTML = cityWeather.temp_max.toFixed(2);
+      clone.querySelector("[data-temp='min']").innerHTML = cityWeather.temp_min.toFixed(2);
+      clone.querySelector("[data-temp='current']").innerHTML = cityWeather.temp.toFixed(2);
+
+      $($loader).hide();
+      $($body).append(clone);
+    }
+
+    function addNewCity(event) {
+      console.log(event);
+      event.preventDefault();
+      $.getJSON(API_WEATHER_URL + "q=" + $nameNewCity.val(), getCurrentWeather);
+    }
+
+    startGeolocation();
+
+  }else{
+    document.write("<h1>Deberias altualizar tu navegador a uno mas moderno e it's free</h1>");
+  }
+})();

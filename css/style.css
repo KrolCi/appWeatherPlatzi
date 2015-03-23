@@ -85,6 +85,9 @@ input[type="submit"] {
         width: 75%;
         font-size: 1rem;
     }
+    .search__btn{
+        flex-basis: 25%;
+    }
 
 
 /*
@@ -183,4 +186,8 @@ input[type="submit"] {
  .loader {
    text-align: center;
    padding: 1em;
+ }
+
+ .center {
+    text-align: center;
  }
