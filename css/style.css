@@ -67,7 +67,6 @@ input[type="submit"] {
         font-weight: normal;
     }
 
-
 /*
 * Módulo .search
 */
@@ -86,10 +85,17 @@ input[type="submit"] {
         font-size: 1rem;
     }
     .search__btn{
-        flex-basis: 25%;
+        width: 25%;
     }
 
-
+@media screen and (max-width: 400px){
+    .search__text {
+        display: block;
+    }
+    .search__btn {
+        display: block;
+    }
+}
 /*
 * Estilizamos el módulo de las cards, cada resumen de tiempo de
 * las ciudades

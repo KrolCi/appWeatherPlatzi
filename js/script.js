@@ -1,8 +1,13 @@
 (function(){
+  var API_WORLD_TIME_KEY = "694e328b81937efe508bdfe76b071";
+  var API_WORLD_TIME = "http://api.worldweatheronline.com/free/v2/tz.ashx?key=" + API_WORLD_TIME_KEY;
   var API_WEATHER_KEY = "a67d111f7f943411d375b6edb008ac48";
   var API_WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather?";
   var WEATHER_IMG = "http://openweathermap.org/img/w/";
 
+  
+  var cities = [];
+  var activarGuardado = false;
   var today = new Date();
   var timeNow = today.toLocaleTimeString();
 
@@ -10,8 +15,10 @@
   var $loader = $(".loader");
   var $nameNewCity = $("[data-input='cityAdd']");
   var $btnSendCity = $("[data-button='add']");
+  var $btnLoad = $("[data-saved-cities]");
 
   $($btnSendCity).on('click', addNewCity);
+  $($btnLoad).on('click', loadSavedCities);
 
   var cityWeather = {};
   cityWeather.zone;
@@ -40,14 +47,21 @@
     }
 
     function getCurrentWeather(data) {
+      //HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      cityWeather = {};
       cityWeather.zone = data.name;
-      cityWeather.hour = timeNow;
       cityWeather.icon = WEATHER_IMG + data.weather[0].icon + ".png";
       cityWeather.temp = data.main.temp - 273.15;
       cityWeather.temp_max = data.main.temp_max - 273.15;
       cityWeather.temp_min = data.main.temp_min - 273.15;
       cityWeather.main = data.main;
-      renderTemplate();
+
+      $.getJSON(API_WORLD_TIME + "&q=" + cityWeather.zone + "&format=json", function(response) {
+        $nameNewCity.val("");
+        cityWeather.hour = response.data.time_zone[0].localtime.split(" ")[1];
+
+        renderTemplate(cityWeather);
+      });
     }
 
     function activateTemplate(id) {
@@ -55,7 +69,7 @@
       return document.importNode(t.content, true);
     }
 
-    function renderTemplate() {
+    function renderTemplate(cityWeather) {
       var clone = activateTemplate("template-city");
       clone.querySelector("[data-city]").innerHTML = cityWeather.zone;
       clone.querySelector("[data-time]").innerHTML = cityWeather.hour;
@@ -67,16 +81,45 @@
       $($loader).hide();
       $($body).append(clone);
     }
-
     function addNewCity(event) {
-      console.log(event);
       event.preventDefault();
-      $.getJSON(API_WEATHER_URL + "q=" + $nameNewCity.val(), getCurrentWeather);
+      $.getJSON(API_WEATHER_URL + "q=" + $nameNewCity.val(), getNewCityWeather);
+    }
+
+    function getNewCityWeather(data){
+      $.getJSON(API_WORLD_TIME + "&q=" + cityWeather.zone + "&format=json", function(response) {
+        $nameNewCity.val("");
+        cityWeather = {};
+        cityWeather.zone = data.name;
+        cityWeather.hour = response.data.time_zone[0].localtime.split(" ")[1];
+        cityWeather.icon = WEATHER_IMG + data.weather[0].icon + ".png";
+        cityWeather.temp = data.main.temp - 273.15;
+        cityWeather.temp_max = data.main.temp_max - 273.15;
+        cityWeather.temp_min = data.main.temp_min - 273.15;
+        cityWeather.main = data.main;
+        renderTemplate(cityWeather);
+        saveCity(cityWeather);
+      });
+    }
+
+    function saveCity(city) {
+      cities.push(city);
+      localStorage.setItem('cities', JSON.stringify(cities));
+    }
+
+    function loadSavedCities(event) {
+      event.preventDefault();
+      var cities = JSON.parse(localStorage.getItem('cities'));
+      for (i = 0 ; i < cities.length; i++){
+        renderTemplate(cities[i]);
+        console.log(i);
+      }
+
     }
 
     startGeolocation();
 
   }else{
-    document.write("<h1>Deberias altualizar tu navegador a uno mas moderno e it's free</h1>");
+    document.write("<h1>Deberias altualizar tu navegador a uno mas moderno it's free</h1>");
   }
 })();
