@@ -109,11 +109,19 @@
 
     function loadSavedCities(event) {
       event.preventDefault();
+      var backup = JSON.parse(localStorage.getItem('cities'));
       var cities = JSON.parse(localStorage.getItem('cities'));
-      for (i = 0 ; i < cities.length; i++){
+
+      backup.concat(cities);
+      cities = backup;
+      
+      cities.forEach(function(city) {
+        renderTemplate(city);
+      });
+      /*for (i = 0 ; i < cities.length; i++){
         renderTemplate(cities[i]);
         console.log(i);
-      }
+      }*/
 
     }
 
